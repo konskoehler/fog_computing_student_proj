@@ -11,18 +11,14 @@ val gpsPostionList: List<GPSPosition> = listOf(
         GPSPosition(51.84172858500746, 13.983947603574126)
 )
 
-val demoMissionsList: List<Missions> =
-
 fun createInspectionData(): InspectionData {
     return InspectionData(gpsPostionList.random(), Random.nextFloat() * 14, Random.nextFloat())
 }
 
-fun createMissionData(): Missions {
-    val randNum = Random.nextInt(0, 2)
+fun createMissionData(): Mission {
+    val randNum = Random.nextInt(0, 1)
     when (randNum) {
         0 -> return InspectionMission(gpsPostionList.random())
-        1 -> return WateringMission(gpsPostionList.random(), Random.nextInt(0, 200))
+        else -> return WateringMission(gpsPostionList.random(), Random.nextInt(0, 200))
     }
-
-
 }
