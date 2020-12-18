@@ -1,3 +1,4 @@
+import java.lang.System.currentTimeMillis
 import kotlin.random.Random
 
 val gpsPostionList: List<GPSPosition> = listOf(
@@ -12,13 +13,13 @@ val gpsPostionList: List<GPSPosition> = listOf(
 )
 
 fun createInspectionData(): InspectionData {
-    return InspectionData(gpsPostionList.random(), Random.nextFloat() * 14, Random.nextFloat())
+    return InspectionData(currentTimeMillis() ,gpsPostionList.random(), Random.nextFloat() * 14, Random.nextFloat())
 }
 
 fun createMissionData(): Mission {
     val randNum = Random.nextInt(0, 1)
     when (randNum) {
-        0 -> return InspectionMission(gpsPostionList.random())
-        else -> return WateringMission(gpsPostionList.random(), Random.nextInt(0, 200))
+        0 -> return InspectionMission(currentTimeMillis(), gpsPostionList.random())
+        else -> return WateringMission(currentTimeMillis(), gpsPostionList.random(), Random.nextInt(0, 200))
     }
 }

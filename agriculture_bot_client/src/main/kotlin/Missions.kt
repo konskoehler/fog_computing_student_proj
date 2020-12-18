@@ -3,7 +3,7 @@ sealed class Mission() {
 }
 
 @Serializable
-data class InspectionMission(val gpsPosition: GPSPosition) : Mission()
+data class InspectionMission(val timestamp: Long, val gpsPosition: GPSPosition) : Mission()
 
 @Serializable
-data class WateringMission(val gpsPosition: GPSPosition, val quantity: Int) : Mission()
+data class WateringMission(val timestamp: Long, val gpsPosition: GPSPosition, val quantity: Int) : Mission()
