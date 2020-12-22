@@ -1,9 +1,8 @@
-@Serializable
-sealed class Mission() {
-}
+import kotlinx.serialization.Serializable
 
 @Serializable
+sealed class Mission
+
 data class InspectionMission(val timestamp: Long, val gpsPosition: GPSPosition) : Mission()
 
-@Serializable
 data class WateringMission(val timestamp: Long, val gpsPosition: GPSPosition, val quantity: Int) : Mission()
