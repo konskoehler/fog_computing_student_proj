@@ -1,8 +1,8 @@
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Mission
+open class Mission(val timestamp: Long, val plant: Plant)
 
-data class InspectionMission(val timestamp: Long, val gpsPosition: GPSPosition) : Mission()
+class InspectionMission(timestamp: Long, plant: Plant) : Mission(timestamp, plant)
 
-data class WateringMission(val timestamp: Long, val gpsPosition: GPSPosition, val quantity: Int) : Mission()
+class WateringMission(timestamp: Long, plant: Plant, val quantity: Int) : Mission(timestamp, plant)
