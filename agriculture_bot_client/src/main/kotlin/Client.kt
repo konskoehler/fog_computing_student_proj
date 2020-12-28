@@ -10,9 +10,6 @@ fun main() {
     Client().run()
 }
 
-@Serializable
-data class ClientRequest(val type: Int, val obj: MissionResultData?)
-
 class Client {
     private lateinit var socket: ZMQ.Socket
 
@@ -43,9 +40,9 @@ class Client {
 
                 val jsonReply = Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 println("Received: $jsonReply")
-                when (jsonReply["type"].toString().toInt()) {
-                    0 -> processInspectionMission()                  // InspectionMission was sent
-                    1 -> processWateringMission()                    // WateringMission was sent
+                when (request) {
+                    is InspectionMission -> processInspectionMission()                  // InspectionMission was sent
+                    is WateringMission -> processWateringMission()                    // WateringMission was sent
                     else -> IllegalStateException()
                 }
                 Thread.sleep(1000)

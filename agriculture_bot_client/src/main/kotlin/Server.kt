@@ -13,9 +13,6 @@ fun main() {
     Server().run()
 }
 
-@Serializable
-data class ServerResponse(val type: Int, val obj: Mission)
-
 class Server {
 
     private lateinit var socket: ZMQ.Socket
@@ -47,8 +44,8 @@ class Server {
                     else -> return              // all missions are done
                 }
         val mission = missions[missionIndex]
-        val type = if (mission is InspectionMission) 0 else 1
-        val response = Json.encodeToString(ServerResponse(type, mission))
+        //val type = if (mission is InspectionMission) 0 else 1
+        val response = Json.encodeToString(mission)
         println("Send: $response")
         socket.send(response.toByteArray(ZMQ.CHARSET), 0)
         missions.removeAt(missionIndex)
