@@ -34,8 +34,9 @@ class Client {
                         ClientRequest(getOpenMissionCount(), getMissionResultsList())
                     ).toByteArray(ZMQ.CHARSET), 0
                 )
+                println("Request sent")
 
-                val serverResponse: ServerResponse = Json.decodeFromJsonElement(
+                val serverResponse: ServerResponse = Json.decodeFromJsonElement<ServerResponse>(
                     Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 )
                 println("Received: $serverResponse")

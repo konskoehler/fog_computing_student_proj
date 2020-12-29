@@ -7,7 +7,7 @@ sealed class Mission() {
 }
 
 @Serializable
-class InspectionMission(override  val timestamp: Long, override val plant: Plant) : Mission()
+data class InspectionMission(override  val timestamp: Long, override val plant: Plant) : Mission()
 
 @Serializable
-class WateringMission(override val timestamp: Long, override val plant: Plant, val quantity: Int):  Mission()
+data class WateringMission(override val timestamp: Long, override val plant: Plant, val quantity: Int):  Mission()

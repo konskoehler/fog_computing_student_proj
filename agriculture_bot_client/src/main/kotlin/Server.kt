@@ -1,8 +1,6 @@
-import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import org.zeromq.SocketType
@@ -28,7 +26,7 @@ class Server {
     fun run() {
         ZContext().use { context ->
             socket = context.createSocket(SocketType.REP)
-            socket.connect("tcp://localhost:5555")
+            socket.bind("tcp://*:5555")
             println("Server ready")
 
             while (!Thread.currentThread().isInterrupted) {
@@ -44,6 +42,7 @@ class Server {
     }
 
     private fun processClientRequest(clientRequest: ClientRequest) {
+        println("Processing Request")
         clientRequest.missionResultsList?.let { list ->
             list.forEach {
                 when (it) {
@@ -56,17 +55,21 @@ class Server {
 
     private fun sendMission() {
         println("sending...")
+        val serverResponse = ServerResponse(getNewMissions())
+        val response = Json.encodeToString<ServerResponse>(serverResponse)
+        println("Send: $response")
+        socket.send(response.toByteArray(ZMQ.CHARSET), 0)
+    }
+
+    private fun getNewMissions(): List<Mission>? {
         val missionIndex =
             when {
                 missions.size > 0 -> nextInt(0, missions.size)
-                else -> return              // all missions are done
+                else -> return null            // all missions are done
             }
-        val mission = missions[missionIndex]
-        //val type = if (mission is InspectionMission) 0 else 1
-        val response = Json.encodeToString(mission)
-        println("Send: $response")
-        socket.send(response.toByteArray(ZMQ.CHARSET), 0)
+        val newMissions: List<Mission> = listOf(missions[missionIndex])
         missions.removeAt(missionIndex)
+        return newMissions
     }
 
     fun processInspectionResultData() {
