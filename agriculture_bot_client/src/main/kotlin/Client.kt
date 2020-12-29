@@ -12,8 +12,7 @@ fun main() {
 }
 
 class Client {
-    private lateinit var senderSocket: ZMQ.Socket
-    private lateinit var receiverSocket: ZMQ.Socket
+    private lateinit var socket: ZMQ.Socket
 
     private val missionList = mutableListOf<Mission>()
 
@@ -21,22 +20,22 @@ class Client {
 
     fun run() {
         ZContext().use { context ->
-            senderSocket = context.createSocket(SocketType.REQ)
-            senderSocket.connect("tcp://localhost:5555")
+            socket = context.createSocket(SocketType.REQ)
+            socket.connect("tcp://localhost:5555")
 
-            receiverSocket = context.createSocket(SocketType.REP)
-            receiverSocket.connect("tcp://localhost:5556")
             println("Connected to Server")
 
             while (!Thread.currentThread().isInterrupted) {
                 if (missionResultsDataList.isNotEmpty()) {
                     val singleMissionResult = missionResultsDataList.removeAt(0)
                     println("Sent: " + Json.encodeToString(singleMissionResult))
-                    senderSocket.send(Json.encodeToString(singleMissionResult).toByteArray(ZMQ.CHARSET), 0)
+                    socket.send(Json.encodeToString(singleMissionResult).toByteArray(ZMQ.CHARSET), 0)
+                } else {
+
                 }
 
                 val missionRequest: Mission = Json.decodeFromJsonElement(
-                    Json.parseToJsonElement(String(receiverSocket.recv(0), ZMQ.CHARSET)).jsonObject
+                    Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 )
                 println("Received: $missionRequest")
                 missionList.add(0, missionRequest)
