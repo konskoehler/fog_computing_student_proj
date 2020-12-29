@@ -16,6 +16,9 @@ fun main() {
     Server().run()
 }
 
+@Serializable
+data class ServerResponse(val missionData: List<Mission>?)
+
 class Server {
     private lateinit var socket: ZMQ.Socket
 

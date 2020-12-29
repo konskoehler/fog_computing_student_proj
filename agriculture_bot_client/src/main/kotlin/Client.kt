@@ -11,12 +11,15 @@ fun main() {
     Client().run()
 }
 
+@Serializable
+data class ClientRequest(val openMissions: Int, val missionResultsList: List<MissionResultData>?)
+
 class Client {
     private lateinit var socket: ZMQ.Socket
 
     private val missionList = mutableListOf<Mission>()
 
-    private val missionResultsDataList = mutableListOf<MissionResultData>(createInspectionData())
+    private val missionResultsList = mutableListOf<MissionResultData>(createInspectionData(), createInspectionData())
 
     fun run() {
         ZContext().use { context ->
@@ -26,13 +29,11 @@ class Client {
             println("Connected to Server")
 
             while (!Thread.currentThread().isInterrupted) {
-                if (missionResultsDataList.isNotEmpty()) {
-                    val singleMissionResult = missionResultsDataList.removeAt(0)
-                    println("Sent: " + Json.encodeToString(singleMissionResult))
-                    socket.send(Json.encodeToString(singleMissionResult).toByteArray(ZMQ.CHARSET), 0)
-                } else {
-
-                }
+                socket.send(
+                    Json.encodeToString(
+                        ClientRequest(getOpenMissionCount(), getMissionResultsList())
+                    ).toByteArray(ZMQ.CHARSET), 0
+                )
 
                 val missionRequest: Mission = Json.decodeFromJsonElement(
                     Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
@@ -40,7 +41,7 @@ class Client {
                 println("Received: $missionRequest")
                 missionList.add(0, missionRequest)
 
-                if(missionList.isNotEmpty()) {
+                if (missionList.isNotEmpty()) {
                     val mission: Mission = missionList.removeAt(0)
                     when (mission) {
                         is InspectionMission -> processInspectionMission()                  // InspectionMission was sent
@@ -51,6 +52,14 @@ class Client {
                 Thread.sleep(1000)
             }
         }
+    }
+
+    private fun getMissionResultsList(): List<MissionResultData>? {
+        return missionResultsList
+    }
+
+    private fun getOpenMissionCount(): Int {
+        return missionList.count()
     }
 
     private fun processInspectionMission() {
