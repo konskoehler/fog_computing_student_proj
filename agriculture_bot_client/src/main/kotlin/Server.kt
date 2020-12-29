@@ -17,7 +17,7 @@ fun main() {
 }
 
 @Serializable
-data class ServerResponse(val missionData: List<Mission>?)
+data class ServerResponse(val missionList: List<Mission>?)
 
 class Server {
     private lateinit var socket: ZMQ.Socket
@@ -30,24 +30,29 @@ class Server {
             socket = context.createSocket(SocketType.REP)
             socket.connect("tcp://localhost:5555")
             println("Server ready")
-            while (!Thread.currentThread().isInterrupted) {
-                runBlocking {
-                    withTimeoutOrNull(250) {
-                        val missionResultDataRequest: MissionResultData = Json.decodeFromJsonElement<MissionResultData>(
-                            Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
-                        )
 
-                        when (missionResultDataRequest) {
-                            is WateringResultData -> processInspectionResultData()              // client sends InspectionResultData
-                            is InspectionResultData -> processWateringResultData()                // client sends WateringResultData
-                        }
-                    }
-                    sendMission()
-                }
+            while (!Thread.currentThread().isInterrupted) {
+                processClientRequest(
+                    Json.decodeFromJsonElement<ClientRequest>(
+                        Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
+                    )
+                )
+
+                sendMission()
             }
         }
     }
 
+    private fun processClientRequest(clientRequest: ClientRequest) {
+        clientRequest.missionResultsList?.let { list ->
+            list.forEach {
+                when (it) {
+                    is WateringResultData -> processInspectionResultData()              // client sends InspectionResultData
+                    is InspectionResultData -> processWateringResultData()                // client sends WateringResultData
+                }
+            }
+        }
+    }
 
     private fun sendMission() {
         println("sending...")

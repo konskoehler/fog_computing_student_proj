@@ -35,11 +35,11 @@ class Client {
                     ).toByteArray(ZMQ.CHARSET), 0
                 )
 
-                val missionRequest: Mission = Json.decodeFromJsonElement(
+                val serverResponse: ServerResponse = Json.decodeFromJsonElement(
                     Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 )
-                println("Received: $missionRequest")
-                missionList.add(0, missionRequest)
+                println("Received: $serverResponse")
+                serverResponse.missionList?.let { missionList.addAll(it) }
 
                 if (missionList.isNotEmpty()) {
                     val mission: Mission = missionList.removeAt(0)
