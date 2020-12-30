@@ -19,7 +19,7 @@ class Client {
 
     private val missionList = mutableListOf<Mission>()
 
-    private val missionResultsList = mutableListOf<MissionResultData>(createInspectionData(), createInspectionData())
+    private val missionResultsList = mutableListOf<MissionResultData>()
 
     fun run() {
         ZContext().use { context ->
@@ -41,8 +41,14 @@ class Client {
                 )
                 println("Received: $serverResponse")
                 serverResponse.missionList?.let { missionList.addAll(it) }
-
-                serverResponse.missionList?.let{mission-> mission.forEach{println(it.hash)}} //ToDo: Remove
+                serverResponse.missionList?.let {
+                    missionList.forEach {
+                        addOpenMission(it)
+                    }
+                }
+                println("missions added to db?")
+                serverResponse.missionList?.let { mission -> mission.forEach { println(it.hash) } } //ToDo: Remove
+                getOpenMissionCount()
 
                 if (missionList.isNotEmpty()) {
                     val mission: Mission = missionList.removeAt(0)
@@ -57,11 +63,21 @@ class Client {
         }
     }
 
+    private fun addOpenMission(mission: Mission) {
+        database.pushMission(mission)
+    }
+
     private fun getMissionResultsList(): List<MissionResultData>? {
         return missionResultsList
     }
 
     private fun getOpenMissionCount(): Int {
+        try {
+            database.fetchMissions().forEach { println(it) }
+        } catch (e: ExceptionInInitializerError) {
+            println("[Error] DB initialized?]")
+        }
+
         return missionList.count()
     }
 

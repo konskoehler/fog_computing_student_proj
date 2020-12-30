@@ -12,9 +12,9 @@ val plantList: List<Plant> = listOf(
         Plant(8L, GPSPosition(51.84172858500746, 13.983947603574126))
 )
 
-fun createInspectionData(): InspectionResultData {
-    return InspectionResultData(currentTimeMillis() ,plantList.random(), Random.nextFloat() * 14, Random.nextFloat())
-}
+/*fun createInspectionData(): InspectionResultData {
+    return InspectionResultData(currentTimeMillis() ,plantList.random(), InspectionMission(123123123, "test"), Random.nextFloat() * 14, Random.nextFloat())
+}*/
 
 fun createMissionData(): Mission {
     val randNum = Random.nextInt(0, 2)
