@@ -15,8 +15,8 @@ object database {
                 .sub<WateringResultData>()
         })
 
-    fun pushMission(mission: InspectionMission){
-        val key = db.put(InspectionMission)
+    fun pushMission(mission: Mission){
+        val key = db.put(mission)
     }
 
     fun fetchMissions(): List<Mission> {
