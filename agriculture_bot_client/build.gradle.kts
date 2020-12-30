@@ -9,12 +9,23 @@ version;"1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    jcenter()
+    maven(url = "https://dl.bintray.com/kodein-framework/Kodein-DB")
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.kodein.db:kodein-db-jvm:0.4.0-beta")
+    implementation("org.kodein.db:kodein-leveldb-jni-jvm-linux:0.4.0-beta")
     //testCompile("group: 'junit', name: 'junit', version: '4.12'") ToDo: is this required? It caused an error while building.
     implementation("org.zeromq:jeromq:0.5.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+}
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

@@ -42,6 +42,8 @@ class Client {
                 println("Received: $serverResponse")
                 serverResponse.missionList?.let { missionList.addAll(it) }
 
+                serverResponse.missionList?.let{mission-> mission.forEach{println(it.hash)}} //ToDo: Remove
+
                 if (missionList.isNotEmpty()) {
                     val mission: Mission = missionList.removeAt(0)
                     when (mission) {
