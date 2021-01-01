@@ -1,8 +1,13 @@
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class MissionResultData(val timestamp: Long, val plant: Plant)
+sealed class MissionResultData() {
+    abstract val timestamp: Long
+    abstract val plant: Plant
+}
 
-class InspectionResultData(timestamp: Long, plant: Plant, val pHLevel: Float, val soilMoisture: Float) : MissionResultData(timestamp, plant)
+@Serializable
+class InspectionResultData(override val timestamp: Long, override val plant: Plant, val pHLevel: Float, val soilMoisture: Float) : MissionResultData()
 
-class WateringResultData(timestamp: Long, plant: Plant, val success: Boolean) : MissionResultData(timestamp, plant)
+@Serializable
+class WateringResultData(override val timestamp: Long, override val plant: Plant, val success: Boolean) : MissionResultData()

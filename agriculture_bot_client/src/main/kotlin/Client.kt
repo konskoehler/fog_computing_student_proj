@@ -1,6 +1,7 @@
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -11,46 +12,55 @@ fun main() {
 }
 
 @Serializable
-data class ClientRequest(val type: Int, val obj: MissionResultData?)
+data class ClientRequest(val openMissions: Int, val missionResultsList: List<MissionResultData>?)
 
 class Client {
     private lateinit var socket: ZMQ.Socket
 
-    private val missions = mutableListOf<Mission>()
+    private val missionList = mutableListOf<Mission>()
 
-    private val inspectionResultData: InspectionResultData? = null
-
-    private val wateringResultData: WateringResultData? = null
+    private val missionResultsList = mutableListOf<MissionResultData>(createInspectionData(), createInspectionData())
 
     fun run() {
         ZContext().use { context ->
             socket = context.createSocket(SocketType.REQ)
             socket.connect("tcp://localhost:5555")
+
             println("Connected to Server")
 
             while (!Thread.currentThread().isInterrupted) {
+                socket.send(
+                    Json.encodeToString(
+                        ClientRequest(getOpenMissionCount(), getMissionResultsList())
+                    ).toByteArray(ZMQ.CHARSET), 0
+                )
+                println("Request sent")
 
-                val request =
-                        when {                                                                          // request new Mission
-                            missions.isEmpty() -> ClientRequest(0, null)                            // 0 = send Empty Request
-                            inspectionResultData != null -> ClientRequest(1, inspectionResultData)      // 1 = send InspectionData
-                            wateringResultData != null -> ClientRequest(2, wateringResultData)          // 2 = send WateringData
-                            else -> throw IllegalStateException()
-                        }
+                val serverResponse: ServerResponse = Json.decodeFromJsonElement<ServerResponse>(
+                    Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
+                )
+                println("Received: $serverResponse")
+                serverResponse.missionList?.let { missionList.addAll(it) }
 
-                println("Sent: " + Json.encodeToString(request))
-                socket.send(Json.encodeToString(request).toByteArray(ZMQ.CHARSET), 0)
-
-                val jsonReply = Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
-                println("Received: $jsonReply")
-                when (jsonReply["type"].toString().toInt()) {
-                    0 -> processInspectionMission()                  // InspectionMission was sent
-                    1 -> processWateringMission()                    // WateringMission was sent
-                    else -> IllegalStateException()
+                if (missionList.isNotEmpty()) {
+                    val mission: Mission = missionList.removeAt(0)
+                    when (mission) {
+                        is InspectionMission -> processInspectionMission()                  // InspectionMission was sent
+                        is WateringMission -> processWateringMission()                    // WateringMission was sent
+                    }
                 }
+
                 Thread.sleep(1000)
             }
         }
+    }
+
+    private fun getMissionResultsList(): List<MissionResultData>? {
+        return missionResultsList
+    }
+
+    private fun getOpenMissionCount(): Int {
+        return missionList.count()
     }
 
     private fun processInspectionMission() {
