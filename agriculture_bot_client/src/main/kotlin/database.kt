@@ -3,23 +3,11 @@ import org.kodein.db.TypeTable
 import org.kodein.db.find
 import org.kodein.db.impl.open
 import org.kodein.db.useModels
+import org.litote.kmongo.KMongo
 
 object database {
-    val db = DB.open("missions_db",
-        TypeTable {
-            root<Mission>()
-                .sub<InspectionMission>()
-                .sub<WateringMission>()
-            root<MissionResultData>()
-                .sub<InspectionResultData>()
-                .sub<WateringResultData>()
-        })
-
-    fun pushMission(mission: Mission){
-        val key = db.put(mission)
-    }
-
-    fun fetchMissions(): List<Mission> {
-        return db.find<Mission>().all().useModels { it.toList() }
-    }
+    val client = KMongo.createClient() //get com.mongodb.MongoClient new instance
+    val database = client.getDatabase("test") //normal java driver usage
+    val missionsCollection = database.getCollection<Missions>() //KMongo extension method
+    val missionResultDataCollection = database.getCollection<Missions>() //KMongo extension method
 }
