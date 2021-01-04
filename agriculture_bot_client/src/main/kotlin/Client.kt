@@ -44,12 +44,9 @@ class Client {
                 serverResponse.missionList?.let { missionList.addAll(it) }
                 serverResponse.missionList?.let {
                     missionList.forEach {
-                        addOpenMission(it)
+                        Database.insertMission(it)
                     }
                 }
-                println("missions added to db?")
-                serverResponse.missionList?.let { mission -> mission.forEach { println(it.hash) } } //ToDo: Remove
-                getOpenMissionCount()
 
                 if (missionList.isNotEmpty()) {
                     val mission: Mission = missionList.removeAt(0)
@@ -64,16 +61,12 @@ class Client {
         }
     }
 
-    private fun addOpenMission(mission: Mission) {
-        missionCollection.insertOne(mission)
-    }
-
     private fun getMissionResultsList(): List<MissionResultData>? {
         return missionResultsList
     }
 
     private fun getOpenMissionCount(): Int {
-       println("asdasd")//missionCollection.to
+        println("asdasd")//missionCollection.to
         return 3
     }
 

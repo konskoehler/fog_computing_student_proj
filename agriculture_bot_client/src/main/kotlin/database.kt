@@ -7,8 +7,10 @@ object Database {
     val client = KMongo.createClient(uri) //get com.mongodb.MongoClient new instance
     val database = client.getDatabase("aggriculture_fog_project_db") //normal java driver usage
     val missionCollection = database.getCollection<Mission>("missionCollection") //KMongo extension method
-    val missionResultDataCollection =
-        database.getCollection<MissionResultData>("missionResultDataCollection") //KMongo extension method
+
+    fun insertMission(mission: Mission) {
+        missionCollection.insertOne(mission)
+    }
 
     fun getOpenMissions(): List<Mission> {
         return missionCollection.find<Mission>().toList()

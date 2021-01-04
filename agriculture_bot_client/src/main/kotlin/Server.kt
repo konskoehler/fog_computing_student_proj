@@ -1,5 +1,4 @@
 import Database.getRandomOpenMissions
-import Database.missionCollection
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -29,7 +28,7 @@ class Server {
         }
 
         plantList.forEach {
-            missionCollection.insertOne(InspectionMission(currentTimeMillis(), it))
+            Database.insertMission(InspectionMission(currentTimeMillis(), it))
         }
 
         println("Server ready")
