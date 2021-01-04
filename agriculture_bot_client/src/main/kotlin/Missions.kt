@@ -1,20 +1,30 @@
 import kotlinx.serialization.Serializable
-import org.kodein.db.model.Id
 
 @Serializable
-sealed class Mission(){
+sealed class Mission() {
     abstract val timestamp: Long
     abstract val plant: Plant
-    abstract val hash: Int
+    abstract val _id: Int?
+    abstract val resultData: MissionResultData?
+    abstract val timestampSentToClient: Int?
 }
 
 @Serializable
-data class InspectionMission(override  val timestamp: Long, override val plant: Plant) : Mission() {
-    @Id override val hash = this.hashCode()
-
-}
+data class InspectionMission(
+    override val timestamp: Long,
+    override val plant: Plant,
+    override val _id: Int? = null,
+    override val resultData: MissionResultData? = null,
+    override val timestampSentToClient: Int? = null,
+) :
+    Mission()
 
 @Serializable
-data class WateringMission(override val timestamp: Long, override val plant: Plant, val quantity: Int):  Mission() {
-    @Id override val hash = this.hashCode()
-}
+data class WateringMission(
+    override val timestamp: Long,
+    override val plant: Plant,
+    val quantity: Int,
+    override val _id: Int? = null,
+    override val resultData: MissionResultData? = null,
+    override val timestampSentToClient: Int? = null,
+) : Mission()

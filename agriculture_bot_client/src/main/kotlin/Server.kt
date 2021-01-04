@@ -1,3 +1,5 @@
+import Database.getRandomOpenMissions
+import Database.missionCollection
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -20,24 +22,27 @@ data class ServerResponse(val missionList: List<Mission>?)
 class Server {
     private lateinit var socket: ZMQ.Socket
 
-    private val missions: MutableList<Mission> =
-        (plantList.indices).map { InspectionMission(currentTimeMillis(), plantList[it]) }.toMutableList()
-
     fun run() {
         ZContext().use { context ->
             socket = context.createSocket(SocketType.REP)
             socket.bind("tcp://*:5555")
-            println("Server ready")
+        }
 
-            while (!Thread.currentThread().isInterrupted) {
-                processClientRequest(
-                    Json.decodeFromJsonElement<ClientRequest>(
-                        Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
-                    )
+        plantList.forEach {
+            missionCollection.insertOne(InspectionMission(currentTimeMillis(), it))
+        }
+
+        println("Server ready")
+
+        while (!Thread.currentThread().isInterrupted) {
+            processClientRequest(
+                Json.decodeFromJsonElement<ClientRequest>(
+                    Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 )
+            )
 
-                sendMission()
-            }
+            sendMission()
+            Thread.sleep(730)
         }
     }
 
@@ -55,21 +60,10 @@ class Server {
 
     private fun sendMission() {
         println("sending...")
-        val serverResponse = ServerResponse(getNewMissions())
+        val serverResponse = ServerResponse(getRandomOpenMissions(nextInt(4)))
         val response = Json.encodeToString<ServerResponse>(serverResponse)
         println("Send: $response")
         socket.send(response.toByteArray(ZMQ.CHARSET), 0)
-    }
-
-    private fun getNewMissions(): List<Mission>? {
-        val missionIndex =
-            when {
-                missions.size > 0 -> nextInt(0, missions.size)
-                else -> return null            // all missions are done
-            }
-        val newMissions: List<Mission> = listOf(missions[missionIndex])
-        missions.removeAt(missionIndex)
-        return newMissions
     }
 
     fun processInspectionResultData() {

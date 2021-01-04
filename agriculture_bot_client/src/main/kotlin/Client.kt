@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
+import org.litote.kmongo.*
 
 fun main() {
     Client().run()
@@ -64,7 +65,7 @@ class Client {
     }
 
     private fun addOpenMission(mission: Mission) {
-        database.pushMission(mission)
+        missionCollection.insertOne(mission)
     }
 
     private fun getMissionResultsList(): List<MissionResultData>? {
@@ -72,22 +73,17 @@ class Client {
     }
 
     private fun getOpenMissionCount(): Int {
-        try {
-            database.fetchMissions().forEach { println(it) }
-        } catch (e: ExceptionInInitializerError) {
-            println("[Error] DB initialized?]")
-        }
-
-        return missionList.count()
+       println("asdasd")//missionCollection.to
+        return 3
     }
 
     private fun processInspectionMission() {
         return
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
     }
 
     private fun processWateringMission() {
         return
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
     }
 }

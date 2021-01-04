@@ -1,13 +1,36 @@
-import org.kodein.db.DB
-import org.kodein.db.TypeTable
-import org.kodein.db.find
-import org.kodein.db.impl.open
-import org.kodein.db.useModels
+
+import org.litote.kmongo.*
 import org.litote.kmongo.KMongo
 
-object database {
-    val client = KMongo.createClient() //get com.mongodb.MongoClient new instance
-    val database = client.getDatabase("test") //normal java driver usage
-    val missionsCollection = database.getCollection<Missions>() //KMongo extension method
-    val missionResultDataCollection = database.getCollection<Missions>() //KMongo extension method
+object Database {
+    val uri =  System.getenv("FOGMONGODATABASE")
+    val client = KMongo.createClient(uri) //get com.mongodb.MongoClient new instance
+    val database = client.getDatabase("aggriculture_fog_project_db") //normal java driver usage
+    val missionCollection = database.getCollection<Mission>("missionCollection") //KMongo extension method
+    val missionResultDataCollection =
+        database.getCollection<MissionResultData>("missionResultDataCollection") //KMongo extension method
+
+    fun getOpenMissions(): List<Mission> {
+        return missionCollection.find<Mission>().toList()
+    }
+
+    fun updateMission(mission: Mission) {
+        mission._id?.let { missionCollection.updateOneById(mission._id!!, mission) }
+
+    }
+
+    fun getAllOpenMissions(): List<Mission> {
+        return missionCollection.aggregate<Mission>(
+            match(Mission::resultData eq null),
+        ).toList()
+    }
+
+    fun getRandomOpenMissions(sampleSize: Int): List<Mission> {
+        return missionCollection.aggregate<Mission>(
+            sample(sampleSize),
+            match(Mission::resultData eq null),
+        ).toList()
+    }
+
 }
+
