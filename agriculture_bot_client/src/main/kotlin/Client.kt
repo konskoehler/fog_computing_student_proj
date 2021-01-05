@@ -6,21 +6,17 @@ import kotlinx.serialization.json.jsonObject
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
-import org.litote.kmongo.*
+import kotlin.random.Random
 
 fun main() {
     Client().run()
 }
 
 @Serializable
-data class ClientRequest(val openMissions: Int, val missionResultsList: List<MissionResultData>?)
+data class ClientRequest(val openMissions: Int, val missionResultsList: List<Mission>)
 
 class Client {
     private lateinit var socket: ZMQ.Socket
-
-    private val missionList = mutableListOf<Mission>()
-
-    private val missionResultsList = mutableListOf<MissionResultData>()
 
     fun run() {
         ZContext().use { context ->
@@ -32,7 +28,7 @@ class Client {
             while (!Thread.currentThread().isInterrupted) {
                 socket.send(
                     Json.encodeToString(
-                        ClientRequest(getOpenMissionCount(), getMissionResultsList())
+                        ClientRequest(Database.getOpenMissionsCount(), Database.getAllClosedMissions())
                     ).toByteArray(ZMQ.CHARSET), 0
                 )
                 println("Request sent")
@@ -41,42 +37,39 @@ class Client {
                     Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
                 )
                 println("Received: $serverResponse")
-                serverResponse.missionList?.let { missionList.addAll(it) }
-                serverResponse.missionList?.let {
-                    missionList.forEach {
+
+
+                if (serverResponse.missionList.isNotEmpty()) {
+                    serverResponse.missionList.forEach {
                         Database.insertMission(it)
                     }
                 }
 
-                if (missionList.isNotEmpty()) {
-                    val mission: Mission = missionList.removeAt(0)
-                    when (mission) {
-                        is InspectionMission -> processInspectionMission()                  // InspectionMission was sent
-                        is WateringMission -> processWateringMission()                    // WateringMission was sent
-                    }
-                }
+                processOpenMissions()
 
                 Thread.sleep(1000)
             }
         }
     }
 
-    private fun getMissionResultsList(): List<MissionResultData>? {
-        return missionResultsList
+    private fun processOpenMissions() {
+        println("Beep Beep... Robot is doing some of its missions...")
+        Database.getRandomOpenMissions(Random.nextInt(4))
+            .forEach { mission ->
+                when (mission) {
+                    is InspectionMission -> processInspectionMission(mission)                  // InspectionMission was sent
+                    is WateringMission -> processWateringMission(mission)                    // WateringMission was sent
+                }
+            }
     }
 
-    private fun getOpenMissionCount(): Int {
-        println("asdasd")//missionCollection.to
-        return 3
+    private fun processInspectionMission(mission: Mission) {
+        print(" Inspecting plants ...")
+        Database.updateMissionResultData(mission, createInspectionData())
     }
 
-    private fun processInspectionMission() {
-        return
-        //TODO("Not yet implemented")
-    }
-
-    private fun processWateringMission() {
-        return
-        //TODO("Not yet implemented")
+    private fun processWateringMission(mission: Mission) {
+        print(" Watering plants ...")
+        Database.updateMissionResultData(mission, createWateringData())
     }
 }

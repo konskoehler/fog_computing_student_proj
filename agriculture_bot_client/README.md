@@ -1,34 +1,52 @@
-Install CoreOS rkt
-gpg --recv-key 18AD5014C99EF7E3BA5F6CE950BDD3E0FC8A365E
-wget https://github.com/rkt/rkt/releases/download/v1.29.0/rkt_1.29.0-1_amd64.deb
-wget https://github.com/rkt/rkt/releases/download/v1.29.0/rkt_1.29.0-1_amd64.deb.asc
-gpg --verify rkt_1.29.0-1_amd64.deb.asc
-sudo dpkg -i rkt_1.29.0-1_amd64.deb
+## About this Project
+This project consists of a server and at least one (edge) client. In order to comply with edge specifications for edge 
+devices the clients will need to cache and buffer (sensor) data and messages. The data is persisted at the client side
+using a local mongoDB server instance running in a docker container.
+
+On the server side a connection to a distributed mongoDB cluster is used to save data.
+
+##Getting Started:
+
+### Create local docker mongoDB instance
+Start mongo server instance:
+```
+sudo docker run -d --network host --name aggriculture-client-mongo -e MONGO_INITDB_ROOT_USERNAME=aggriculture_bot -e MONGO_INITDB_ROOT_PASSWORD=iloveplants mongo
+```
+Connect to mongo instance from another container
+```
+sudo docker run -it --rm --network host mongo \
+mongo 127.0.0.1 \
+-u aggriculture_bot \
+-p iloveplants \
+--authenticationDatabase admin
+```
+
+Now you can create a new database:
+```
+>use aggriculture_fog_project_db
+```
+
+And create a new collection
+```
+>db.createCollection("missionCollection")
+```
+
+### Set Environment Variable
+In order to connect to the respective mongo database on the Server and Client the environment variable "FOGMONGODATABASE"
+needs to be set to the correct uri
+```
+export FOGMONGODATABASE=<uri>
+```
 
 
 
-## Start Server and Client
-Server and Client need to get started with the respective mongoDB URL set as environmental variable "FOGMONGODATABASE".
-export FOGMONGODATABASE=
 
 
-docker network create agriculture-network
 
 
-sudo docker run -d --network agriculture-network --name aggriculture-client-mongo -e MONGO_INITDB_ROOT_USERNAME=aggriculture_bot -e MONGO_INITDB_ROOT_PASSWORD=iloveplants mongo
 
-docker run -it --rm --network agriculture-network mongo \
-    mongo --host aggriculture-client-mongo \
-        -u aggriculture_bot \
-        -p iloveplants \
-        --authenticationDatabase admin \
-        aggriculture_fog_project_db
 
-Check if database was created successfully:
-'''
-> db.getName()
-aggriculture_fog_project_db
-'''
 
-Create collection
-'''>db.createCollection("missionCollection")'''
+
+
+
