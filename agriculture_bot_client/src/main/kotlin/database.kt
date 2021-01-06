@@ -33,10 +33,13 @@ object Database {
         ).toList()
     }
 
+    fun deleteAllClosedMissions() {
+        missionCollection.deleteMany(Mission::resultData ne null)
+    }
+
     fun getRandomOpenMissions(sampleSize: Int): List<Mission> {
-        println(sampleSize)
         return missionCollection.aggregate<Mission>(
-            sample(1),
+            sample(sampleSize),
             match(Mission::resultData eq null),
         ).toList()
     }

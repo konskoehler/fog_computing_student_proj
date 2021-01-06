@@ -38,6 +38,8 @@ class Client {
                 )
                 println("Received: $serverResponse")
 
+                // Delete all closed missions as soon as the server replied
+                Database.deleteAllClosedMissions()
 
                 if (serverResponse.missionList.isNotEmpty()) {
                     serverResponse.missionList.forEach {
@@ -65,11 +67,13 @@ class Client {
 
     private fun processInspectionMission(mission: Mission) {
         print(" Inspecting plants ...")
+        Thread.sleep(200)
         Database.updateMissionResultData(mission, createInspectionData())
     }
 
     private fun processWateringMission(mission: Mission) {
         print(" Watering plants ...")
+        Thread.sleep(300)
         Database.updateMissionResultData(mission, createWateringData())
     }
 }
