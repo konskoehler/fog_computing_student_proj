@@ -38,9 +38,13 @@ needs to be set to the correct uri
 export FOGMONGODATABASE=<uri>
 ```
 
+## Start Server and Client
+Make sure there is mongoDB instance running locally. This instance is only used by the client.
+```
+docker start aggriculture-client-mongo
+```
 
-
-
+Start Server.kt and Client.kt or run respective jar files.
 
 
 

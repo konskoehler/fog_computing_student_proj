@@ -21,11 +21,11 @@ fun createWateringData(): WateringResultData {
 }
 
 fun createMissionDemoDataAndInsertIntoDB(sampleSize: Int) {
-    for (i in 1..sampleSize) {
+    repeat(sampleSize){
         val randNum = Random.nextInt(0, 2)
         when (randNum) {
-            0 -> return Database.insertMission(InspectionMission(currentTimeMillis(), plantList.random()))
-            else -> return Database.insertMission(
+            0 -> Database.insertMission(InspectionMission(currentTimeMillis(), plantList.random()))
+            else -> Database.insertMission(
                 WateringMission(
                     currentTimeMillis(),
                     plantList.random(),
