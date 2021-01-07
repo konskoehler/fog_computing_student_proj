@@ -9,6 +9,7 @@ version;"1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -17,4 +18,13 @@ dependencies {
     implementation("org.zeromq:jeromq:0.5.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+    implementation("org.litote.kmongo:kmongo-serialization:4.2.3")
+    implementation("org.litote.kmongo:kmongo-id-serialization:4.2.3")
+}
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
