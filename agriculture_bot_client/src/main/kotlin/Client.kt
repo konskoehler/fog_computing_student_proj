@@ -23,36 +23,49 @@ class Client {
 
     fun run() {
         ZContext().use { context ->
-            socket = context.createSocket(SocketType.REQ)
-            socket.connect("tcp://localhost:5555")
-
+            socket = createReqSocket(context)
             println("Connected to Server")
 
-            while (!Thread.currentThread().isInterrupted) {
+
+            while (true) runBlocking {
                 socket.send(
-                    Json.encodeToString(
-                        ClientRequest(getOpenMissionCount(), getMissionResultsList())
-                    ).toByteArray(ZMQ.CHARSET), 0
+                        Json.encodeToString(
+                                ClientRequest(getOpenMissionCount(), getMissionResultsList())
+                        ).toByteArray(ZMQ.CHARSET), 0
                 )
                 println("Request sent")
 
-                val serverResponse: ServerResponse = Json.decodeFromJsonElement<ServerResponse>(
-                    Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
-                )
-                println("Received: $serverResponse")
-                serverResponse.missionList?.let { missionList.addAll(it) }
+                val response = socket.recv(0)
+
+                val validServerResponse: ServerResponse = if (response == null) {
+                    println("Timeout")
+                    socket.close()
+                    socket = createReqSocket(context)
+                    return@runBlocking
+                } else {
+                    Json.decodeFromJsonElement(
+                            Json.parseToJsonElement(String(response, ZMQ.CHARSET)).jsonObject
+                    )
+                }
+                println("Received: $validServerResponse")
+                validServerResponse.missionList?.let { missionList.addAll(it) }
 
                 if (missionList.isNotEmpty()) {
-                    val mission: Mission = missionList.removeAt(0)
-                    when (mission) {
+                    when (missionList.removeAt(0)) {
                         is InspectionMission -> processInspectionMission()                  // InspectionMission was sent
                         is WateringMission -> processWateringMission()                    // WateringMission was sent
                     }
                 }
-
-                Thread.sleep(1000)
+                delay(1000)
             }
         }
+    }
+
+    private fun createReqSocket(context: ZContext): ZMQ.Socket {
+        val socket = context.createSocket(SocketType.REQ)
+        socket.receiveTimeOut = 5000
+        socket.connect("tcp://localhost:5555")
+        return socket
     }
 
     private fun getMissionResultsList(): List<MissionResultData>? {
