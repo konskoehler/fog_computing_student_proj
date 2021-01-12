@@ -1,4 +1,5 @@
 import Database.getRandomOpenMissions
+import Database.reopenExpiredMissions
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -36,6 +37,7 @@ class Server {
                 )
 
                 sendMission()
+                reopenExpiredMissions()
                 Thread.sleep(730)
             }
         }
