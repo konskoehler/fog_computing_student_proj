@@ -60,7 +60,7 @@ class Server {
         socket.send(response.toByteArray(ZMQ.CHARSET), 0)
         println("Send: $response")
 
-        Database.updateTimeSentToClient(serverResponse.missionList)
+        Database.updateExpirationDate(serverResponse.missionList)
     }
 
     private fun processInspectionResultData(mission: InspectionMission) {
