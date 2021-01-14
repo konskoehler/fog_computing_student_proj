@@ -70,7 +70,9 @@ object Database {
         print(missionExpirationTimestamp)
 
         missionCollection.aggregate<Mission>(
-            match(Mission::resultData ne null, Mission::processingExpirationDate lt missionExpirationTimestamp),
+            match(Mission::resultData eq null,
+                Mission::processingExpirationDate ne null,
+                Mission::processingExpirationDate lt missionExpirationTimestamp),
         )
             .toList()
             .forEach {
