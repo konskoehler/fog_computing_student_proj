@@ -50,11 +50,11 @@ object Database {
         ).toList()
     }
 
-    fun updateTimeSentToClient(missions: List<Mission>) {
+    fun updateExpirationDate(missions: List<Mission>) {
         val currentTimestamp = System.currentTimeMillis()
         missions.forEach {
             missionCollection.updateOne(
-                Mission::_id eq it._id, setValue(Mission::timeSentToClient, currentTimestamp)
+                Mission::_id eq it._id, setValue(Mission::processingExpirationDate, currentTimestamp)
             )
         }
     }
@@ -63,6 +63,21 @@ object Database {
         missionCollection.updateOne(
             Mission::_id eq mission._id, setValue(Mission::resultData, missionResultData)
         )
+    }
+
+    fun reopenExpiredMissions() {
+        val missionExpirationTimestamp: Long = System.currentTimeMillis() - 60000
+        print(missionExpirationTimestamp)
+
+        missionCollection.aggregate<Mission>(
+            match(Mission::resultData eq null,
+                Mission::processingExpirationDate ne null,
+                Mission::processingExpirationDate lt missionExpirationTimestamp),
+        )
+            .toList()
+            .forEach {
+                missionCollection.updateOne(Mission::_id eq it._id, setValue(Mission::processingExpirationDate, null))
+            }
     }
 }
 
