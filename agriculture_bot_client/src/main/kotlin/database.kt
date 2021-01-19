@@ -23,25 +23,28 @@ object Database {
 
     fun getOpenMissionsCount(): Int {
         return missionCollection.aggregate<Mission>(
-            match(Mission::resultData eq null),
+            match(Mission::resultData eq null,
+                Mission::processingExpirationDate eq null),
         ).count()
     }
 
     fun getAllOpenMissions(): List<Mission> {
         return missionCollection.aggregate<Mission>(
-            match(Mission::resultData eq null),
+            match(Mission::resultData eq null,
+                Mission::processingExpirationDate eq null),
         ).toList()
-    }
-
-    fun deleteAllClosedMissions() {
-        missionCollection.deleteMany(Mission::resultData ne null)
     }
 
     fun getRandomOpenMissions(sampleSize: Int): List<Mission> {
         return missionCollection.aggregate<Mission>(
             sample(sampleSize),
-            match(Mission::resultData eq null),
+            match(Mission::resultData eq null,
+                Mission::processingExpirationDate eq null),
         ).toList()
+    }
+
+    fun deleteAllClosedMissions() {
+        missionCollection.deleteMany(Mission::resultData ne null)
     }
 
     fun getAllClosedMissions(): List<Mission> {
