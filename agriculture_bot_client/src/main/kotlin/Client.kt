@@ -1,3 +1,5 @@
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -20,12 +22,11 @@ class Client {
 
     fun run() {
         ZContext().use { context ->
-            socket = context.createSocket(SocketType.REQ)
-            socket.connect("tcp://localhost:5555")
-
+            socket = createReqSocket(context)
             println("Connected to Server")
 
-            while (!Thread.currentThread().isInterrupted) {
+
+            while (true) runBlocking {
                 socket.send(
                     Json.encodeToString(
                         ClientRequest(Database.getOpenMissionsCount(), Database.getAllClosedMissions())
@@ -33,25 +34,41 @@ class Client {
                 )
                 println("Request sent")
 
-                val serverResponse: ServerResponse = Json.decodeFromJsonElement<ServerResponse>(
-                    Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
-                )
-                println("Received: $serverResponse")
+                val response = socket.recv(0)
+
+                val validServerResponse: ServerResponse = if (response == null) {
+                    println("Timeout")
+                    socket.close()
+                    socket = createReqSocket(context)
+                    return@runBlocking
+                } else {
+                    Json.decodeFromJsonElement(
+                            Json.parseToJsonElement(String(response, ZMQ.CHARSET)).jsonObject
+                    )
+                }
+                println("Received: $validServerResponse")
 
                 // Delete all closed missions as soon as the server replied
                 Database.deleteAllClosedMissions()
 
-                if (serverResponse.missionList.isNotEmpty()) {
-                    serverResponse.missionList.forEach {
+                if (validServerResponse.missionList.isNotEmpty()) {
+                    validServerResponse.missionList.forEach {
                         Database.insertMission(it)
                     }
                 }
 
                 processOpenMissions()
 
-                Thread.sleep(1000)
+                delay(1000)
             }
         }
+    }
+
+    private fun createReqSocket(context: ZContext): ZMQ.Socket {
+        val socket = context.createSocket(SocketType.REQ)
+        socket.receiveTimeOut = 5000
+        socket.connect("tcp://localhost:5555")
+        return socket
     }
 
     private fun processOpenMissions() {
