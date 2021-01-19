@@ -2,7 +2,6 @@ import java.lang.System.currentTimeMillis
 import kotlin.random.Random
 
 val plantList: List<Plant> = listOf(
-    Plant(1L, GPSPosition(40.741895, -73.989308)),
     Plant(2L, GPSPosition(52.25656946732926, 13.753234042396873)),
     Plant(3L, GPSPosition(52.16860875622813, 13.817321068218082)),
     Plant(4L, GPSPosition(52.13445467414507, 14.03521668778929)),

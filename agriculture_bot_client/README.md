@@ -14,10 +14,10 @@ sudo docker run -d --network host --name aggriculture-client-mongo -e MONGO_INIT
 ```
 Connect to mongo instance from another container
 ```
-sudo docker run -it --rm --network host mongo \
-mongo 127.0.0.1 \
--u aggriculture_bot \
--p iloveplants \
+sudo docker run -it --rm --network host mongo 
+mongo 127.0.0.1
+-u aggriculture_bot
+-p iloveplants
 --authenticationDatabase admin
 ```
 
