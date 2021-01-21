@@ -57,7 +57,7 @@ object Database {
         val currentTimestamp = System.currentTimeMillis()
         missions.forEach {
             missionCollection.updateOne(
-                Mission::_id eq it._id, setValue(Mission::processingExpirationDate, currentTimestamp)
+                Mission::_id eq it._id, setValue(Mission::processingExpirationDate, currentTimestamp + 5000)
             )
         }
     }
@@ -69,11 +69,11 @@ object Database {
     }
 
     fun reopenExpiredMissions() {
-        val missionExpirationTimestamp: Long = System.currentTimeMillis() - 60000
+        val currentTimestamp: Long = System.currentTimeMillis()
         missionCollection.aggregate<Mission>(
             match(Mission::resultData eq null,
                 Mission::processingExpirationDate ne null,
-                Mission::processingExpirationDate lt missionExpirationTimestamp),
+                Mission::processingExpirationDate lt currentTimestamp),
         )
             .toList()
             .forEach {
