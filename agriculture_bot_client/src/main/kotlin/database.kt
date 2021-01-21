@@ -70,8 +70,6 @@ object Database {
 
     fun reopenExpiredMissions() {
         val missionExpirationTimestamp: Long = System.currentTimeMillis() - 60000
-        print(missionExpirationTimestamp)
-
         missionCollection.aggregate<Mission>(
             match(Mission::resultData eq null,
                 Mission::processingExpirationDate ne null,
