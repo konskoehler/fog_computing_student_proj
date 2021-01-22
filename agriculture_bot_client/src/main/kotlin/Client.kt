@@ -25,41 +25,47 @@ class Client {
             socket = createReqSocket(context)
             println("Connected to Server")
 
-
             while (true) runBlocking {
+                var closedMissions = Database.getAllClosedMissions()
+
                 socket.send(
                     Json.encodeToString(
-                        ClientRequest(Database.getOpenMissionsCount(), Database.getAllClosedMissions())
+                        ClientRequest(Database.getOpenMissionsCount(), closedMissions)
                     ).toByteArray(ZMQ.CHARSET), 0
                 )
-                println("Request sent")
+                //println("Request sent")
 
                 val response = socket.recv(0)
 
                 val validServerResponse: ServerResponse = if (response == null) {
-                    println("Timeout")
+                    StatsCounter.increaseTimeoutCount(1)
+                    StatsCounter.printClientStats()
+
                     socket.close()
                     socket = createReqSocket(context)
                     return@runBlocking
                 } else {
+                    StatsCounter.increaseSentSinceStartCount(closedMissions.size)
+
                     Json.decodeFromJsonElement(
-                            Json.parseToJsonElement(String(response, ZMQ.CHARSET)).jsonObject
+                        Json.parseToJsonElement(String(response, ZMQ.CHARSET)).jsonObject
                     )
                 }
-                println("Received: $validServerResponse")
+                //println("Received: $validServerResponse")
 
                 // Delete all closed missions as soon as the server replied
                 Database.deleteAllClosedMissions()
 
                 if (validServerResponse.missionList.isNotEmpty()) {
+                    StatsCounter.increaseReceivedSinceStart(validServerResponse.missionList.size)
                     validServerResponse.missionList.forEach {
                         Database.insertMission(it)
                     }
                 }
 
+                StatsCounter.printClientStats()
                 processOpenMissions()
-
-                delay(1000)
+                delay(200)
             }
         }
     }
@@ -72,7 +78,7 @@ class Client {
     }
 
     private fun processOpenMissions() {
-        println("Beep Beep... Robot is doing some of its missions...")
+        //println("Beep Beep... Robot is doing some of its missions...")
         Database.getRandomOpenMissions(Random.nextInt(4))
             .forEach { mission ->
                 when (mission) {
@@ -83,14 +89,21 @@ class Client {
     }
 
     private fun processInspectionMission(mission: Mission) {
-        print(" Inspecting plants ...")
+        //print(" Inspecting plants ...")
         Thread.sleep(200)
         Database.updateMissionResultData(mission, createInspectionData())
     }
 
     private fun processWateringMission(mission: Mission) {
-        print(" Watering plants ...")
+        //print(" Watering plants ...")
         Thread.sleep(300)
         Database.updateMissionResultData(mission, createWateringData())
+    }
+
+    private fun printServerProgress() {
+        val total = 10
+        var openMissionProgressString: String =
+            "#".repeat(Database.getOpenMissionsCount()) + "-".repeat(total - Database.getOpenMissionsCount())
+        print(openMissionProgressString + "\r ")
     }
 }

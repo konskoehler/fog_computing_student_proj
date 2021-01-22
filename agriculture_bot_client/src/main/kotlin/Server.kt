@@ -38,12 +38,14 @@ class Server {
 
                 sendMission()
                 reopenExpiredMissions()
-                Thread.sleep(730)
+                StatsCounter.printServerStats()
+                Thread.sleep(200)
             }
         }
     }
 
     private fun processClientRequest(clientRequest: ClientRequest) {
+        StatsCounter.increaseClosedSinceStart(clientRequest.missionResultsList.size)
         clientRequest.missionResultsList.forEach {
             when (it) {
                 is InspectionMission -> processInspectionResultData(it)
@@ -52,25 +54,22 @@ class Server {
         }
     }
 
-
     private fun sendMission() {
-        println("sending...")
         val serverResponse = ServerResponse(getRandomOpenMissions(nextInt(4)))
         val response = Json.encodeToString<ServerResponse>(serverResponse)
         socket.send(response.toByteArray(ZMQ.CHARSET), 0)
-        println("Send: $response")
 
         Database.updateExpirationDate(serverResponse.missionList)
+        StatsCounter.increaseSentSinceStartCount(serverResponse.missionList.size)
     }
 
     private fun processInspectionResultData(mission: InspectionMission) {
-        print(" Server is processing inspection results ...")
-        println(mission)
+        //print(" Server is processing inspection results ...")
         Database.updateMission(mission)
     }
 
     private fun processWateringResultData(mission: WateringMission) {
-        print(" Server is processing watering results ...")
+        //print(" Server is processing watering results ...")
         Database.updateMission(mission)
     }
 }
