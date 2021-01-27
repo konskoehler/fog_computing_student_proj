@@ -53,32 +53,22 @@ Start Server.kt and Client.kt or run respective jar files.
 
 ```kotlin
 @Serializable
-sealed class Mission() {
+sealed class MissionResultData() {
     abstract val timestamp: Long
-    abstract val plant: Plant
-    abstract val _id: String
-    abstract var resultData: MissionResultData?
-    abstract var processingExpirationDate: Long?
 }
 
 @Serializable
-data class InspectionMission(
+class InspectionResultData(
     override val timestamp: Long,
-    override val plant: Plant,
-    override val _id: String = newId<Mission>().toString(),
-    override var resultData: MissionResultData? = null,
-    override var processingExpirationDate: Long? = null,
-) :
-    Mission()
+    val pHLevel: Float,
+    val soilMoisture: Float
+) : MissionResultData()
 
 @Serializable
-data class WateringMission(
+class WateringResultData(
     override val timestamp: Long,
-    override val plant: Plant,
-    val quantity: Int,
-    override val _id: String = newId<Mission>().toString(),
-    override var resultData: MissionResultData? = null,
-    override var processingExpirationDate: Long? = null,
-) : Mission()
+    val success: Boolean
+) : MissionResultData()
+
 
 ```
