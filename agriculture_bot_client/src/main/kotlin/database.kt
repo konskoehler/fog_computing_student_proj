@@ -37,9 +37,9 @@ object Database {
 
     fun getRandomOpenMissions(sampleSize: Int): List<Mission> {
         return missionCollection.aggregate<Mission>(
-            sample(sampleSize),
             match(Mission::resultData eq null,
                 Mission::processingExpirationDate eq null),
+            sample(sampleSize),
         ).toList()
     }
 

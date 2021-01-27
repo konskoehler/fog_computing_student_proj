@@ -30,6 +30,7 @@ class Server {
             createMissionDemoDataAndInsertIntoDB(10)
 
             while (!Thread.currentThread().isInterrupted) {
+                StatsCounter.printServerStats()
                 processClientRequest(
                     Json.decodeFromJsonElement<ClientRequest>(
                         Json.parseToJsonElement(String(socket.recv(0), ZMQ.CHARSET)).jsonObject
@@ -38,7 +39,6 @@ class Server {
 
                 sendMission()
                 reopenExpiredMissions()
-                StatsCounter.printServerStats()
                 Thread.sleep(200)
             }
         }
@@ -56,6 +56,7 @@ class Server {
 
     private fun sendMission() {
         val serverResponse = ServerResponse(getRandomOpenMissions(nextInt(4)))
+        //print(serverResponse)
         val response = Json.encodeToString<ServerResponse>(serverResponse)
         socket.send(response.toByteArray(ZMQ.CHARSET), 0)
 
