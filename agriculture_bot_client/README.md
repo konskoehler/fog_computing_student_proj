@@ -5,7 +5,9 @@ using a local mongoDB server instance running in a docker container.
 
 On the server side a connection to a distributed mongoDB cluster is used to save data.
 
-##Getting Started:
+
+
+## Getting Started:
 
 ### Create local docker mongoDB instance
 Start mongo server instance:
