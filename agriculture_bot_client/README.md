@@ -1,3 +1,5 @@
+**Note: This respository contains project files of a university fog computing prototyping assignment**
+
 ## Getting Started:
 
 ### Create local docker mongoDB instance
