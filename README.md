@@ -4,7 +4,6 @@
 ### Scenario 
 The Client is an agriculture bot which is able to do two different tasks: Watering and Inspecting plants  (checking soil humidity and pH level) on a farm. Both tasks will hereinafter be called missions. The client is regularly sending requests to the server to receive new missions. This request also contains information about completed missions including simulated sensor data (soil humidity and pH level).
 
-Figure 1: Agricultural Scenario
 
 The server is responsible to supply new missions to the bot and to save the results of completed missions permanently. 
 Further logic like the use of sensor data to determine when a plant should be watered next is neglected in the actual implementation as this is only a scenario to exemplify a fog application which has to cope with fog-specific challanges. In a real life scenario, the server would use the inspection data and inforamtion about the weather to calculate the amount of water, that the respective plant ideally needs to be watered with.
