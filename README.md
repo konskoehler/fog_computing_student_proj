@@ -1,4 +1,4 @@
-**This respository contains project files of a university fog computing prototyping assignment**
+**Note: This respository contains project files of a university fog computing prototyping assignment**
 
 ## About this Project
 ### Scenario 
