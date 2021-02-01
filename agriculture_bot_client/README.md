@@ -1,12 +1,3 @@
-## About this Project
-This project consists of a server and at least one (edge) client. In order to comply with edge specifications for edge 
-devices the clients will need to cache and buffer (sensor) data and messages. The data is persisted at the client side
-using a local mongoDB server instance running in a docker container.
-
-On the server side a connection to a distributed mongoDB cluster is used to save data.
-
-
-
 ## Getting Started:
 
 ### Create local docker mongoDB instance
